@@ -1,7 +1,5 @@
 import os
-import csv
 import ipaddress
-from pprint import pprint
 
 from netmiko import ConnectHandler
 from secret import HP_USERNAME, HP_PASSWORD, IP_RANGE
@@ -64,30 +62,3 @@ def show_switch(ip, items):
     spinner.succeed()
     spinner.stop()
 
-
-# if __name__ == '__main__':
-#     arp_list = []
-#     raw_arp_table = ''
-#     with open('switch_arp/192.168.2.2', 'r') as f:
-#         raw_arp_table = f.read()
-#
-#     fixed_arp_list = [x.strip() for x in raw_arp_table.split("\n")[6:-2]]
-#     pprint(fixed_arp_list)
-#     for item in fixed_arp_list:
-#         item = item.replace('     ', ' ').replace('    ', ' ').replace('   ', ' ').replace('  ', ' ')
-#         item = item.split(' ')
-#         if len(item) > 3:
-#             arp_list.append({
-#                 'IP': item[0],
-#                 'MAC': item[1],
-#                 'Port': item[3]
-#             })
-#     pprint(arp_list)
-#
-#     with open('SwitchAddresses.csv', 'r') as f:
-#         reader = csv.reader(f)
-#         commands = ['arp']
-#         ip_list = generate_ip_list(IP_RANGE)
-#         for row in reader:
-#             ping_from_switch(row[0], ip_list)
-#             show_switch(row[0], commands)

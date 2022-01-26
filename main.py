@@ -1,13 +1,10 @@
 from __future__ import unicode_literals
-import subprocess
 import socket
 import sys
 import inspect
 from SwitchDiagnostics import *
-from netmiko import ConnectHandler
-import xml.etree.ElementTree as ET
 from halo import Halo
-from secret import HP_USERNAME, HP_PASSWORD, IP_RANGE, ADDRESS_OF_SCANNER
+from secret import IP_RANGE
 
 
 def retrieve_name(var):
