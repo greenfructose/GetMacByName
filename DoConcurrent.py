@@ -4,7 +4,7 @@ import time
 from pprint import pprint
 
 
-def multithread(function: Callable, switch_ips: list) -> None:
+def multithread(function: Callable, switch_ips: list[str]) -> None:
     """
     Runs function concurrently on list of switch IP
     addresses. TODO: Fix messy output when running functions concurrently.

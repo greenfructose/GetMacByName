@@ -1,8 +1,7 @@
 import os
-import ipaddress
 
 from netmiko import ConnectHandler
-from secret import HP_USERNAME, HP_PASSWORD
+from secret import USERNAME, PASSWORD, DEVICE_TYPE
 from halo import Halo
 
 
@@ -13,13 +12,13 @@ def get_connection(ip: str) -> ConnectHandler:
     :return: Connection as ConnectHandler
     """
     connection = ConnectHandler(ip=ip,
-                                device_type='hp_procurve',
-                                username=HP_USERNAME,
-                                password=HP_PASSWORD)
+                                device_type=DEVICE_TYPE,
+                                username=USERNAME,
+                                password=PASSWORD)
     return connection
 
 
-def ping_from_switch(switch_ip: str, ip_list: list) -> None:
+def ping_from_switch(switch_ip: str, ip_list: list[str]) -> None:
     """
     Pings list of IPs from switch. Used primarily for populating ARP table.
     :param switch_ip: IP of switch to ping from
@@ -39,16 +38,7 @@ def ping_from_switch(switch_ip: str, ip_list: list) -> None:
     connection.disconnect()
 
 
-def generate_ip_list(ip_range: str) -> list:
-    """
-    Creates a list of IP addresses from provided CIDR range.
-    :param ip_range: IP range in CIDR notation
-    :return: list of IP addresses as strings
-    """
-    return [str(ip) for ip in ipaddress.IPv4Network(ip_range)]
-
-
-def run_commands(ip: str, commands: list) -> None:
+def run_commands(ip: str, commands: list[str]) -> None:
     """
     Cycles through a list of 'show' commands to run on a switch
     :param ip: Address of switch as String
@@ -77,4 +67,3 @@ def run_commands(ip: str, commands: list) -> None:
     connection.disconnect()
     spinner.succeed()
     spinner.stop()
-
