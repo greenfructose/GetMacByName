@@ -7,9 +7,10 @@ import csv
 from SwitchDiagnostics import *
 from halo import Halo
 from secret import IP_RANGE
+from DoConcurrent import multithread
 
 
-def retrieve_name(var):
+def retrieve_name(var) -> str:
     """
     Gets name of variable passed to a function.
     :param var: Variable whos name is needed.
@@ -19,7 +20,7 @@ def retrieve_name(var):
     return [var_name for var_name, var_val in callers_local_vars if var_val is var][0]
 
 
-def write_result_csv(source, method, prepend=None):
+def write_result_csv(source: list, method: str, prepend: str = None) -> None:
     """
     Writes a list of dictionaries to a CSV file in CWD. Name
     of file is generated from name of list variable. Requires
@@ -29,11 +30,11 @@ def write_result_csv(source, method, prepend=None):
     :param prepend: String to prepend to filename, optional.
     :return: None
     """
-    file_empty = os.stat('collection1.dat').st_size == 0
     if prepend is None:
         filename = f'{retrieve_name(source)}.csv'
     else:
         filename = f'{prepend}-{retrieve_name(source)}.csv'
+    file_empty = os.stat(filename).st_size == 0
     fieldnames = list(source[0].keys())
     with open(filename, method) as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator='\n', delimiter=',')
@@ -44,7 +45,7 @@ def write_result_csv(source, method, prepend=None):
             pprint(f"Writing Row: {data}")
 
 
-def reformat_mac(mac):
+def reformat_mac(mac: str) -> str:
     """
     Reformat MAC address to all lowercase with
      dashes separating octets e.g. 1a-2a-a3-b5-e4-2a
@@ -56,7 +57,7 @@ def reformat_mac(mac):
     return mac
 
 
-def get_hostname_by_ip(ip):
+def get_hostname_by_ip(ip: str) -> str:
     """
     Gets hostname by IP address.
     :param ip: IP to check as string.
@@ -68,13 +69,21 @@ def get_hostname_by_ip(ip):
         return 'Hostname not found'
 
 
-def write_mac_tables(ip):
+def write_arp_tables(ip: str):
+    """
+    Logs into switch, pings every address in IP_RANGE, then gets the
+    ARP table from each switch. Writes remote device IP, remote device
+    MAC, remote device hostname, switch ip, and switch port the remote
+    device is connected too into a CSV file.
+    :param ip: IP address of switch as string
+    :return: Success string 'Success on {ip}'
+    """
     spinner = Halo(spinner='dots')
     try:
         commands = ['arp']
         ip_list = generate_ip_list(IP_RANGE)
         ping_from_switch(ip, ip_list)
-        show_switch(ip, commands)
+        run_commands(ip, commands)
         arp_list = []
         spinner.start(f'\nGetting ARP table from switch at {ip}')
         with open(f'switch_arp/{ip}', 'r') as f:
@@ -103,9 +112,8 @@ def write_mac_tables(ip):
 
 
 if __name__ == '__main__':
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    # get_all_ips(IP_RANGE)
+    switch_ips = []
     with open('SwitchAddresses.csv', 'r') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            write_mac_tables(row[0])
+        for row in csv.reader(f):
+            switch_ips.append(row[0])
+    multithread(write_arp_tables, switch_ips)

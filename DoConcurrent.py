@@ -1,24 +1,26 @@
 import concurrent.futures
-import csv
+from typing import Callable
 import time
 from pprint import pprint
-from main import write_mac_tables
 
 
-def multithread():
-    ips = []
-    with open('SwitchAddresses.csv', 'r') as f:
-        for row in csv.reader(f):
-            ips.append(row[0])
+def multithread(function: Callable, switch_ips: list) -> None:
+    """
+    Runs function concurrently on list of switch IP
+    addresses. TODO: Fix messy output when running functions concurrently.
+    :param function: Function to run on IPs
+    :param switch_ips: List of switch IP addresses
+    :return: None
+    """
     with concurrent.futures.ThreadPoolExecutor() as executor:
         start = time.perf_counter()
         response_process = []
-        for ip in ips:
-            response_process.append(executor.submit(write_mac_tables, ip))
+        for ip in switch_ips:
+            response_process.append(executor.submit(function, ip))
         print(f'Duration: {time.perf_counter() - start}')
         for f in response_process[0:]:
             pprint(f.result())
 
 
 if __name__ == '__main__':
-    multithread()
+    pass
