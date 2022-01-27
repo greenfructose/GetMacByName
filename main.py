@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 
-from secret import IP_RANGE
-from src.manage_switches.SwitchFunctions import *
-from src.manage_switches.DocFunctions import *
-from src.manage_switches.NetworkFunctions import *
-from src.manage_switches.DoConcurrent import *
+from manage_switches.DoConcurrent import *
+from manage_switches.DocFunctions import *
+from manage_switches.NetworkFunctions import *
+from manage_switches.SwitchFunctions import *
+
+from secret import IP_RANGE, USERNAME, PASSWORD, DEVICE_TYPE
 
 
 def write_arp_tables(ip: str):
@@ -18,10 +19,16 @@ def write_arp_tables(ip: str):
     """
     spinner = Halo(spinner='dots')
     try:
+        coninfo = {
+            'ip': ip,
+            'device_type': DEVICE_TYPE,
+            'username': USERNAME,
+            'password': PASSWORD
+        }
         commands = ['arp']
         ip_list = generate_ip_list(IP_RANGE)
-        ping_from_switch(ip, ip_list)
-        run_commands(ip, commands)
+        ping_from_switch(coninfo, ip_list)
+        run_commands(coninfo, commands)
         arp_list = []
         spinner.start(f'\nGetting ARP table from switch at {ip}')
         with open(f'switch_arp/{ip}', 'r') as f:
@@ -42,7 +49,7 @@ def write_arp_tables(ip: str):
                     'Switch Port': item[3]
                 })
         write_result_csv(arp_list, 'a+', prepend=ip)
-        spinner.succeed(f'\nFile written to switch_arp/{ip}')
+        spinner.succeed(f'\nFile written to {ip}-srp_list.csv')
         spinner.stop()
         return f'Success on {ip}'
     except (KeyboardInterrupt, SystemExit):
