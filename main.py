@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 import socket
 import sys
 import inspect
+from pprint import pprint
+import csv
 from SwitchDiagnostics import *
 from halo import Halo
 from secret import IP_RANGE
@@ -43,12 +45,23 @@ def write_result_csv(source, method, prepend=None):
 
 
 def reformat_mac(mac):
+    """
+    Reformat MAC address to all lowercase with
+     dashes separating octets e.g. 1a-2a-a3-b5-e4-2a
+    :param mac: MAC address to format
+    :return: reformatted MAC as string
+    """
     mac = mac.replace('-', '').replace(':', '')
     mac = '-'.join(mac[i:i + 2] for i in range(0, 12, 2)).lower()
     return mac
 
 
 def get_hostname_by_ip(ip):
+    """
+    Gets hostname by IP address.
+    :param ip: IP to check as string.
+    :return: Either the hostname as a string or 'Hostname not found'
+    """
     try:
         return socket.gethostbyaddr(ip)[0]
     except:
@@ -58,26 +71,21 @@ def get_hostname_by_ip(ip):
 def write_mac_tables(ip):
     spinner = Halo(spinner='dots')
     try:
-        with open('SwitchAddresses.csv', 'r') as f:
-            reader = csv.reader(f)
-            commands = ['arp']
-            ip_list = generate_ip_list(IP_RANGE)
-            for row in reader:
-                ping_from_switch(row[0], ip_list)
-                show_switch(row[0], commands)
+        commands = ['arp']
+        ip_list = generate_ip_list(IP_RANGE)
+        ping_from_switch(ip, ip_list)
+        show_switch(ip, commands)
         arp_list = []
-        spinner.start(f'Getting ARP table from switch at {ip}')
+        spinner.start(f'\nGetting ARP table from switch at {ip}')
         with open(f'switch_arp/{ip}', 'r') as f:
             raw_arp_table = f.read()
         spinner.succeed()
         spinner.stop()
-        spinner.start(f'Formatting ARP table and writing to file.')
+        spinner.start(f'\nFormatting ARP table and writing to file.')
         fixed_arp_list = [x.strip() for x in raw_arp_table.split("\n")[6:-2]]
-        print('Fixed Arp List')
         for item in fixed_arp_list:
             item = item.replace('     ', ' ').replace('    ', ' ').replace('   ', ' ').replace('  ', ' ')
             item = item.split(' ')
-            pprint(item)
             if len(item) > 3:
                 arp_list.append({
                     'IP': item[0],
@@ -86,10 +94,10 @@ def write_mac_tables(ip):
                     'Switch IP': ip,
                     'Switch Port': item[3]
                 })
-            pprint(arp_list)
-        write_result_csv(arp_list, 'a+')
-        spinner.succeed(f'File written to switch_arp/{ip}')
+        write_result_csv(arp_list, 'a+', prepend=ip)
+        spinner.succeed(f'\nFile written to switch_arp/{ip}')
         spinner.stop()
+        return f'Success on {ip}'
     except (KeyboardInterrupt, SystemExit):
         spinner.stop()
 

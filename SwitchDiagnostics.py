@@ -16,12 +16,12 @@ def get_connection(ip):
 
 def ping_from_switch(switch_ip, ip_list):
     spinner = Halo(spinner='dots')
-    spinner.start(f'Connecting to {switch_ip}')
+    spinner.start(f'\nConnecting to {switch_ip}')
     connection = get_connection(switch_ip)
     spinner.succeed()
     spinner.stop()
     for ip in ip_list:
-        spinner.start(f'Pinging {ip}')
+        spinner.start(f'\nPinging {ip} from switch {switch_ip}')
         connection.send_command(f'ping {ip}')
         spinner.succeed()
         spinner.stop()
@@ -45,19 +45,19 @@ def show_switch(ip, items):
     spinner.succeed()
     spinner.stop()
     for item in items:
-        spinner.start(f'Getting {item}. This might take a bit.')
-        startup_config = connection.send_command(f'show {item}')
+        spinner.start(f'\nGetting {item}. This might take a bit.')
+        return_data = connection.send_command(f'show {item}')
         spinner.succeed()
         spinner.stop()
         item = item.replace(' ', '_').replace('-', '_')
-        spinner.start(f'Writing {item} to switch_{item}/{ip}')
+        spinner.start(f'\nWriting {item} to switch_{item}/{ip}')
         if not os.path.exists(f'switch_{item}'):
             os.mkdir(f'switch_{item}')
         with open(f'switch_{item}/{ip}', 'w+') as f:
-            f.write(startup_config)
-        spinner.succeed(f'Command "show {item}" on {ip} completed and written to switch_{item}/{ip}')
+            f.write(return_data)
+        spinner.succeed(f'\nCommand "show {item}" on {ip} completed and written to switch_{item}/{ip}')
         spinner.stop()
-    spinner.start(f'Closing connection to {ip}')
+    spinner.start(f'\nClosing connection to {ip}')
     connection.disconnect()
     spinner.succeed()
     spinner.stop()
