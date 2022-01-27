@@ -1,11 +1,10 @@
 from __future__ import unicode_literals
-from halo import Halo
 
 from secret import IP_RANGE
-from SwitchFunctions import *
-from DocFunctions import *
-from NetworkFunctions import *
-from DoConcurrent import *
+from src.manage_switches.SwitchFunctions import *
+from src.manage_switches.DocFunctions import *
+from src.manage_switches.NetworkFunctions import *
+from src.manage_switches.DoConcurrent import *
 
 
 def write_arp_tables(ip: str):

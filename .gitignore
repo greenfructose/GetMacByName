@@ -87,3 +87,5 @@ db.sqlite3
 secret.py
 scan.xml
 /switch*/*
+/dist/*
+.pypirc
